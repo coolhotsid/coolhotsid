@@ -9,3 +9,13 @@ This repository contains a simple client-side vendor portal interface. Open `ven
 - Fix validation errors and re-upload invoices on the same screen.
 
 No backend is included; all logic runs in the browser for demonstration purposes.
+
+## Tetris
+
+A simple terminal-based Tetris clone is provided in `tetris.py`. Run:
+
+```
+python tetris.py
+```
+
+Use the arrow keys to move or rotate pieces and press `q` to quit.
