@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Vendor Portal</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin:20px; }
+    h1 { margin-bottom: 10px; }
+    table { width:100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border:1px solid #ccc; padding:8px; text-align:left; }
+    th { background-color:#f2f2f2; }
+    .status-accepted { color:green; }
+    .status-rejected { color:red; }
+    .status-pending { color:orange; }
+    .status-processing { color:blue; }
+    .summary { margin-top:20px; }
+  </style>
+</head>
+<body>
+  <h1>Vendor Invoice Portal</h1>
+  <div>
+    <label for="invoice-files">Upload invoices:</label>
+    <input type="file" id="invoice-files" multiple accept=".pdf,.jpg,.png,.doc,.docx">
+    <button id="add-invoices">Add Invoices</button>
+  </div>
+  
+  <div class="summary">
+    Total: <span id="total-count">0</span>,
+    Accepted: <span id="accepted-count">0</span>,
+    Rejected: <span id="rejected-count">0</span>
+  </div>
+
+  <table id="invoice-table">
+    <thead>
+      <tr>
+        <th>Invoice</th>
+        <th>PO Numbers</th>
+        <th>Status</th>
+        <th>Validation Message</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    const invoiceInput = document.getElementById('invoice-files');
+    const addBtn = document.getElementById('add-invoices');
+    const tableBody = document.querySelector('#invoice-table tbody');
+    const totalSpan = document.getElementById('total-count');
+    const acceptedSpan = document.getElementById('accepted-count');
+    const rejectedSpan = document.getElementById('rejected-count');
+
+    let invoices = [];
+
+    function updateSummary() {
+      totalSpan.textContent = invoices.length;
+      acceptedSpan.textContent = invoices.filter(i => i.status === 'Accepted').length;
+      rejectedSpan.textContent = invoices.filter(i => i.status === 'Rejected').length;
+    }
+
+    function createRow(invoice) {
+      const tr = document.createElement('tr');
+
+      // file name
+      const nameTd = document.createElement('td');
+      nameTd.textContent = invoice.file.name;
+      tr.appendChild(nameTd);
+
+      // po numbers
+      const poTd = document.createElement('td');
+      const poInput = document.createElement('input');
+      poInput.type = 'text';
+      poInput.placeholder = 'PO1, PO2';
+      poInput.value = invoice.po.join(', ');
+      poInput.addEventListener('input', () => {
+        invoice.po = poInput.value.split(',').map(s => s.trim()).filter(Boolean);
+      });
+      poTd.appendChild(poInput);
+      tr.appendChild(poTd);
+
+      // status
+      const statusTd = document.createElement('td');
+      statusTd.textContent = invoice.status;
+      statusTd.className = 'status-' + invoice.status.toLowerCase();
+      tr.appendChild(statusTd);
+
+      // validation message
+      const msgTd = document.createElement('td');
+      msgTd.textContent = invoice.message;
+      tr.appendChild(msgTd);
+
+      // actions
+      const actionTd = document.createElement('td');
+      const validateBtn = document.createElement('button');
+      validateBtn.textContent = 'Validate';
+      validateBtn.addEventListener('click', () => validateInvoice(invoice, statusTd, msgTd));
+      actionTd.appendChild(validateBtn);
+
+      const reuploadInput = document.createElement('input');
+      reuploadInput.type = 'file';
+      reuploadInput.style.display = 'none';
+      reuploadInput.addEventListener('change', () => {
+        if (reuploadInput.files.length) {
+          invoice.file = reuploadInput.files[0];
+          nameTd.textContent = invoice.file.name;
+          invoice.status = 'Pending';
+          invoice.message = '';
+          statusTd.textContent = invoice.status;
+          statusTd.className = 'status-pending';
+          msgTd.textContent = '';
+          updateSummary();
+        }
+      });
+      actionTd.appendChild(reuploadInput);
+
+      const reuploadBtn = document.createElement('button');
+      reuploadBtn.textContent = 'Re-upload';
+      reuploadBtn.style.display = 'none';
+      reuploadBtn.addEventListener('click', () => reuploadInput.click());
+      actionTd.appendChild(reuploadBtn);
+
+      invoice.validateBtn = validateBtn;
+      invoice.reuploadBtn = reuploadBtn;
+
+      tr.appendChild(actionTd);
+      return tr;
+    }
+
+    function validateInvoice(invoice, statusTd, msgTd) {
+      invoice.status = 'Processing';
+      statusTd.textContent = invoice.status;
+      statusTd.className = 'status-processing';
+      msgTd.textContent = '';
+      updateSummary();
+
+      setTimeout(() => {
+        if (!invoice.po.length) {
+          invoice.status = 'Rejected';
+          invoice.message = 'At least one PO number is required.';
+        } else {
+          if (Math.random() > 0.5) {
+            invoice.status = 'Accepted';
+            invoice.message = '';
+          } else {
+            invoice.status = 'Rejected';
+            invoice.message = 'Failed automatic checks.';
+          }
+        }
+        statusTd.textContent = invoice.status;
+        statusTd.className = 'status-' + invoice.status.toLowerCase();
+        msgTd.textContent = invoice.message;
+        invoice.reuploadBtn.style.display = invoice.status === 'Rejected' ? 'inline' : 'none';
+        updateSummary();
+      }, 1000);
+    }
+
+    addBtn.addEventListener('click', () => {
+      for (const file of invoiceInput.files) {
+        const invoice = {file, po: [], status: 'Pending', message: ''};
+        invoices.push(invoice);
+        const row = createRow(invoice);
+        tableBody.appendChild(row);
+      }
+      invoiceInput.value = '';
+      updateSummary();
+    });
+  </script>
+</body>
+</html>
