@@ -1,16 +1,15 @@
-## Hi there 👋
+# Vendor Invoice Portal
 
-<!--
-**coolhotsid/coolhotsid** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
+This repository contains a simple vendor portal screen that allows vendors to upload invoices, tag them with purchase order (PO) numbers, and track validation results.
 
-Here are some ideas to get you started:
+## Getting Started
 
-- 🔭 I’m currently working on ...
-- 🌱 I’m currently learning ...
-- 👯 I’m looking to collaborate on ...
-- 🤔 I’m looking for help with ...
-- 💬 Ask me about ...
-- 📫 How to reach me: ...
-- 😄 Pronouns: ...
-- ⚡ Fun fact: ...
--->
+Open `index.html` in a web browser. You can then:
+
+1. Select one or more invoice files.
+2. For each invoice, enter one or more PO numbers separated by commas.
+3. Click **Validate** to run basic checks.
+4. See the status (accepted or rejected) and any validation errors.
+5. If an invoice is rejected, correct the issues and use the re-upload option to try again.
+
+The summary section shows how many invoices were rejected out of the total uploaded.
