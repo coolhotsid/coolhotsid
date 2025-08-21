@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Vendor Invoice Portal</title>
+  <style>
+    body { font-family: sans-serif; margin: 20px; }
+    .invoice { border: 1px solid #ccc; padding: 10px; margin-top: 10px; }
+    .status-accepted { color: green; }
+    .status-rejected { color: red; }
+    .po-input { width: 100%; }
+    .error { color: red; }
+  </style>
+</head>
+<body>
+  <h1>Vendor Invoice Portal</h1>
+  <div>
+    <label for="invoiceFiles">Select invoice files:</label>
+    <input type="file" id="invoiceFiles" multiple />
+    <button id="addInvoicesBtn">Add Invoices</button>
+  </div>
+  <div id="invoiceList"></div>
+  <h2>Summary</h2>
+  <div id="summary">No invoices uploaded.</div>
+
+  <script src="portal.js"></script>
+</body>
+</html>
