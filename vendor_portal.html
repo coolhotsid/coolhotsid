@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Vendor Portal</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; }
+    h1 { margin-bottom: 1rem; }
+    .invoice-entry { border: 1px solid #ccc; padding: 1rem; margin-bottom: 1rem; }
+    .invoice-entry input[type="file"] { display: block; margin-bottom: 0.5rem; }
+    .status { margin-top: 0.5rem; }
+    .accepted { color: green; }
+    .rejected { color: red; }
+  </style>
+</head>
+<body>
+  <h1>Vendor Portal</h1>
+  <div id="invoiceList"></div>
+  <button id="addInvoice">Add Invoice</button>
+  <button id="uploadInvoices">Upload Invoices</button>
+
+  <h2>Upload Progress</h2>
+  <p>Total rejected invoices: <span id="rejectedCount">0</span></p>
+
+  <script>
+    const invoiceList = document.getElementById('invoiceList');
+    const addBtn = document.getElementById('addInvoice');
+    const uploadBtn = document.getElementById('uploadInvoices');
+    const rejectedCountEl = document.getElementById('rejectedCount');
+
+    let invoiceId = 0;
+
+    function createInvoiceEntry() {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'invoice-entry';
+      wrapper.dataset.id = invoiceId++;
+
+      const fileInput = document.createElement('input');
+      fileInput.type = 'file';
+      fileInput.accept = 'application/pdf,image/*';
+
+      const poLabel = document.createElement('label');
+      poLabel.textContent = 'PO numbers (comma-separated):';
+
+      const poInput = document.createElement('input');
+      poInput.type = 'text';
+      poInput.placeholder = 'e.g., PO123, PO456';
+
+      const statusDiv = document.createElement('div');
+      statusDiv.className = 'status';
+
+      wrapper.appendChild(fileInput);
+      wrapper.appendChild(poLabel);
+      wrapper.appendChild(poInput);
+      wrapper.appendChild(statusDiv);
+
+      invoiceList.appendChild(wrapper);
+    }
+
+    function clearStatuses() {
+      document.querySelectorAll('.status').forEach(s => s.textContent = '');
+    }
+
+    function validatePOs(poString) {
+      const values = poString.split(',').map(v => v.trim()).filter(Boolean);
+      const validations = [];
+      if (values.length === 0) {
+        validations.push('PO reference required');
+      } else {
+        const invalid = values.filter(v => !/^PO\d+$/.test(v));
+        if (invalid.length) {
+          validations.push('Invalid PO format: ' + invalid.join(', '));
+        }
+      }
+      return { values, validations };
+    }
+
+    addBtn.addEventListener('click', createInvoiceEntry);
+
+    uploadBtn.addEventListener('click', () => {
+      clearStatuses();
+      let rejected = 0;
+      document.querySelectorAll('.invoice-entry').forEach(entry => {
+        const fileInput = entry.querySelector('input[type="file"]');
+        const poInput = entry.querySelector('input[type="text"]');
+        const statusDiv = entry.querySelector('.status');
+
+        const statusMessages = [];
+        const { values, validations } = validatePOs(poInput.value);
+
+        if (!fileInput.files.length) {
+          statusMessages.push('No invoice file selected');
+        }
+        statusMessages.push(...validations);
+
+        if (statusMessages.length) {
+          statusDiv.textContent = 'Rejected: ' + statusMessages.join('; ');
+          statusDiv.className = 'status rejected';
+          rejected++;
+        } else {
+          statusDiv.textContent = 'Accepted with POs: ' + values.join(', ');
+          statusDiv.className = 'status accepted';
+        }
+      });
+      rejectedCountEl.textContent = rejected;
+    });
+
+    // Initialize with one invoice entry
+    createInvoiceEntry();
+  </script>
+</body>
+</html>
